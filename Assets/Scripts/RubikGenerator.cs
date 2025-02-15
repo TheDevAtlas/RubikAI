@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class RubikGenerator : MonoBehaviour
 {
@@ -8,6 +8,9 @@ public class RubikGenerator : MonoBehaviour
     // public GameObject edgePiece;
     // public GameObject centerPiece;
     public Material[] faceMats;
+
+    // ─── ADDED: Edge Piece Reference ────────────────────────────────
+    public GameObject edgePiece;
 
     private void Start()
     {
@@ -33,6 +36,27 @@ public class RubikGenerator : MonoBehaviour
             }
         }
 
+        // ─── ADDED: Generate Edge Pieces ───────────────────────────────
+        // An edge piece has exactly two coordinates on the extremes (0 or n_size-1)
+        for (int x = 0; x < n_size; x++)
+        {
+            for (int y = 0; y < n_size; y++)
+            {
+                for (int z = 0; z < n_size; z++)
+                {
+                    int extremeCount = 0;
+                    if (x == 0 || x == n_size - 1) extremeCount++;
+                    if (y == 0 || y == n_size - 1) extremeCount++;
+                    if (z == 0 || z == n_size - 1) extremeCount++;
+
+                    if (extremeCount == 2)
+                    {
+                        CreateEdge(x, y, z);
+                    }
+                }
+            }
+        }
+
         // Adjust the overall scale if needed
         transform.localScale = Vector3.one * (3f / n_size);
     }
@@ -44,8 +68,8 @@ public class RubikGenerator : MonoBehaviour
     void CreateCorner(int x, int y, int z)
     {
         // Calculate the position so that the cube is centered around the transform's position
-        Vector3 pos = new Vector3(x, y, z) 
-                      - new Vector3(n_size - 1, n_size - 1, n_size - 1) / 2f 
+        Vector3 pos = new Vector3(x, y, z)
+                      - new Vector3(n_size - 1, n_size - 1, n_size - 1) / 2f
                       + transform.position;
 
         // Determine the Y rotation based on x and z.
@@ -64,5 +88,50 @@ public class RubikGenerator : MonoBehaviour
         // For top corners, adjust the scale (as in your original code)
         if (y == n_size - 1)
             corner.transform.localScale = new Vector3(100f, -100f, 100f);
+    }
+
+    // ─── ADDED: CreateEdge Method ───────────────────────────────
+    /// <summary>
+    /// Instantiates an edge piece at the given grid coordinates,
+    /// determining its proper rotation based on which two axes are at the extremes.
+    /// </summary>
+    void CreateEdge(int x, int y, int z)
+    {
+        // Calculate the position so that the cube is centered around the transform's position.
+        Vector3 pos = new Vector3(x, y, z)
+                      - new Vector3(n_size - 1, n_size - 1, n_size - 1) / 2f
+                      + transform.position;
+
+        // Determine rotation based on which two coordinates are at the extremes.
+        Quaternion rotation = Quaternion.identity;
+
+        // Edge on x-y plane (z is in between)
+        if ((x == 0 || x == n_size - 1) && (y == 0 || y == n_size - 1))
+        {
+            Vector3 forward = (x == 0) ? -Vector3.right : Vector3.right;
+            Vector3 up = -Vector3.up;
+            rotation = Quaternion.LookRotation(-forward, -up);
+        }
+        // Edge on x-z plane (y is in between)
+        else if ((x == 0 || x == n_size - 1) && (z == 0 || z == n_size - 1))
+        {
+            Vector3 forward = (x == 0) ? -Vector3.right : Vector3.right;
+            Vector3 up = (z == 0) ? -Vector3.forward : Vector3.forward;
+            rotation = Quaternion.LookRotation(-forward, -up);
+        }
+        // Edge on y-z plane (x is in between)
+        else if ((y == 0 || y == n_size - 1) && (z == 0 || z == n_size - 1))
+        {
+            Vector3 forward = (z == 0) ? -Vector3.forward : Vector3.forward;
+            Vector3 up = -Vector3.up;
+            rotation = Quaternion.LookRotation(-forward, -up);
+        }
+
+        // Instantiate the edge piece as a child of this transform.
+        GameObject edge = Instantiate(edgePiece, pos, rotation, transform);
+
+        // For top edge pieces, adjust the scale (mirroring as done for corners)
+        if (y == n_size - 1)
+            edge.transform.localScale = new Vector3(100f, -100f, 100f);
     }
 }

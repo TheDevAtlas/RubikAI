@@ -731,11 +731,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96cb251bc253a0c45b571d3ff4d81ff8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  n_size: 3
-  centerPiece: {fileID: 0}
-  edgePiece: {fileID: 0}
+  n_size: 5
   cornerPiece: {fileID: 1283951684456619242, guid: 3ea4e26655a05ca4eaa454b401dbdb25, type: 3}
   faceMats: []
+  edgePiece: {fileID: 3578523102022489602, guid: 619df4b9472bf0348a2c903ed2515619, type: 3}
 --- !u!1 &1192696415
 GameObject:
   m_ObjectHideFlags: 0
