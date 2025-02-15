@@ -728,15 +728,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1024203978}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67b54fee6b7de0f4b9a82164122e6153, type: 3}
+  m_Script: {fileID: 11500000, guid: 96cb251bc253a0c45b571d3ff4d81ff8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubeSize: 15
-  centerPiece: {fileID: 8793132064665642956, guid: 5acf533736c24754cb7edb2a996cfbfc, type: 3}
-  edgePiece: {fileID: 3578523102022489602, guid: 619df4b9472bf0348a2c903ed2515619, type: 3}
+  n_size: 3
+  centerPiece: {fileID: 0}
+  edgePiece: {fileID: 0}
   cornerPiece: {fileID: 1283951684456619242, guid: 3ea4e26655a05ca4eaa454b401dbdb25, type: 3}
-  animateMoves: 1
-  moveDuration: 0.5
+  faceMats: []
 --- !u!1 &1192696415
 GameObject:
   m_ObjectHideFlags: 0
