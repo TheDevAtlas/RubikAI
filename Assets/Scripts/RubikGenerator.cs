@@ -148,30 +148,37 @@ public class RubikGenerator : MonoBehaviour
 
         Quaternion rotation = Quaternion.identity;
 
-        // Set the outward-facing rotation based on which axis is extreme.
+        // Because the face piece model is reversed (its painted side is on the back),
+        // we reverse the direction used in LookRotation.
         if (x == 0)
         {
-            rotation = Quaternion.LookRotation(-Vector3.right, Vector3.up);
+            // Left face: originally used -Vector3.right, so now use Vector3.right.
+            rotation = Quaternion.LookRotation(Vector3.right, Vector3.up);
         }
         else if (x == n_size - 1)
         {
-            rotation = Quaternion.LookRotation(Vector3.right, Vector3.up);
+            // Right face: originally used Vector3.right, so now use -Vector3.right.
+            rotation = Quaternion.LookRotation(-Vector3.right, Vector3.up);
         }
         else if (y == 0)
         {
-            rotation = Quaternion.LookRotation(-Vector3.up, Vector3.forward);
+            // Bottom face: originally used -Vector3.up, so now use Vector3.up.
+            rotation = Quaternion.LookRotation(Vector3.up, Vector3.forward);
         }
         else if (y == n_size - 1)
         {
-            rotation = Quaternion.LookRotation(Vector3.up, Vector3.back);
+            // Top face: originally used Vector3.up, so now use -Vector3.up.
+            rotation = Quaternion.LookRotation(-Vector3.up, Vector3.back);
         }
         else if (z == 0)
         {
-            rotation = Quaternion.LookRotation(-Vector3.forward, Vector3.up);
+            // Back face: originally used -Vector3.forward, so now use Vector3.forward.
+            rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
         }
         else if (z == n_size - 1)
         {
-            rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+            // Front face: originally used Vector3.forward, so now use -Vector3.forward.
+            rotation = Quaternion.LookRotation(-Vector3.forward, Vector3.up);
         }
 
         GameObject face = Instantiate(facePiece, pos, rotation, transform);
