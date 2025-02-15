@@ -2,12 +2,11 @@ using UnityEngine;
 
 public class RubikGenerator : MonoBehaviour
 {
-    public int n_size;
+    public int n_size = 3; // e.g., a 3x3x3 cube
 
-    public GameObject centerPiece;
-    public GameObject edgePiece;
     public GameObject cornerPiece;
-
+    // public GameObject edgePiece;
+    // public GameObject centerPiece;
     public Material[] faceMats;
 
     private void Start()
@@ -17,101 +16,53 @@ public class RubikGenerator : MonoBehaviour
 
     public void Generate()
     {
-
-        // Build Rubik's Cube From Bottom To Top //
-        for(int x = 0; x < n_size; x++)
+        // Instead of iterating through every cell,
+        // only loop through the eight corner positions.
+        for (int ix = 0; ix < 2; ix++)
         {
-            for (int z = 0; z < n_size; z++)
+            for (int iy = 0; iy < 2; iy++)
             {
-                for (int y = 0; y < n_size; y++)
+                for (int iz = 0; iz < 2; iz++)
                 {
-                    CheckCorner(x, y, z);
+                    // Convert binary loop indices to actual positions (0 or n_size - 1)
+                    int x = (ix == 0) ? 0 : n_size - 1;
+                    int y = (iy == 0) ? 0 : n_size - 1;
+                    int z = (iz == 0) ? 0 : n_size - 1;
+                    CreateCorner(x, y, z);
                 }
             }
         }
 
-        // Rescale Pieces For Screen Size //
+        // Adjust the overall scale if needed
         transform.localScale = Vector3.one * (3f / n_size);
     }
 
-    public void CheckCorner(int x, int y, int z)
+    /// <summary>
+    /// Instantiates a corner piece at the given grid coordinates,
+    /// applying the proper rotation and scale.
+    /// </summary>
+    void CreateCorner(int x, int y, int z)
     {
-        if(x == 0)
-        {
-            if(y == 0)
-            {
-                if(z == 0)
-                {
-                    GameObject n = Instantiate(cornerPiece, new Vector3(x,y,z) - new Vector3(n_size-1f, n_size-1f, n_size-1f)/ 2f + transform.position, Quaternion.identity);
-                    n.transform.Rotate(new Vector3(0f, 0f, 0f));
-                    n.transform.parent = transform;
-                }
-                
-                if (z == n_size - 1)
-                {
-                    GameObject n = Instantiate(cornerPiece, new Vector3(x, y, z) - new Vector3(n_size - 1f, n_size - 1f, n_size - 1f) / 2f + transform.position, Quaternion.identity);
-                    n.transform.Rotate(new Vector3(0f, 90f, 0f));
-                    n.transform.parent = transform;
-                }
-            }
+        // Calculate the position so that the cube is centered around the transform's position
+        Vector3 pos = new Vector3(x, y, z) 
+                      - new Vector3(n_size - 1, n_size - 1, n_size - 1) / 2f 
+                      + transform.position;
 
-            if (y == n_size - 1)
-            {
-                if (z == 0)
-                {
-                    GameObject n = Instantiate(cornerPiece, new Vector3(x, y, z) - new Vector3(n_size - 1f, n_size - 1f, n_size - 1f) / 2f + transform.position, Quaternion.identity);
-                    n.transform.Rotate(new Vector3(0f, 0f, 0f));
-                    n.transform.localScale = new Vector3(100f, -100f, 100f);
-                    n.transform.parent = transform;
-                }
+        // Determine the Y rotation based on x and z.
+        // Bottom pieces (y == 0) use one set of rotations; top pieces (y == n_size - 1) the same rotations but with a scale flip.
+        float yRotation = 0f;
+        if (x == 0)
+            yRotation = (z == 0) ? 0f : 90f;
+        else // x is n_size - 1
+            yRotation = (z == 0) ? 270f : 180f;
 
-                if (z == n_size - 1)
-                {
-                    GameObject n = Instantiate(cornerPiece, new Vector3(x, y, z) - new Vector3(n_size - 1f, n_size - 1f, n_size - 1f) / 2f + transform.position, Quaternion.identity);
-                    n.transform.Rotate(new Vector3(0f, 90f, 0f));
-                    n.transform.localScale = new Vector3(100f, -100f, 100f);
-                    n.transform.parent = transform;
-                }
-            }
-        }
+        Quaternion rotation = Quaternion.Euler(0f, yRotation, 0f);
 
-        if (x == n_size - 1)
-        {
-            if (y == 0)
-            {
-                if (z == 0)
-                {
-                    GameObject n = Instantiate(cornerPiece, new Vector3(x, y, z) - new Vector3(n_size - 1f, n_size - 1f, n_size - 1f) / 2f + transform.position, Quaternion.identity);
-                    n.transform.Rotate(new Vector3(0f, 270f, 0f));
-                    n.transform.parent = transform;
-                }
+        // Instantiate the corner piece as a child of this transform.
+        GameObject corner = Instantiate(cornerPiece, pos, rotation, transform);
 
-                if (z == n_size - 1)
-                {
-                    GameObject n = Instantiate(cornerPiece, new Vector3(x, y, z) - new Vector3(n_size - 1f, n_size - 1f, n_size - 1f) / 2f + transform.position, Quaternion.identity);
-                    n.transform.Rotate(new Vector3(0f, 180f, 0f));
-                    n.transform.parent = transform;
-                }
-            }
-
-            if (y == n_size - 1)
-            {
-                if (z == 0)
-                {
-                    GameObject n = Instantiate(cornerPiece, new Vector3(x, y, z) - new Vector3(n_size - 1f, n_size - 1f, n_size - 1f) / 2f + transform.position, Quaternion.identity);
-                    n.transform.Rotate(new Vector3(0f, 270f, 0f));
-                    n.transform.localScale = new Vector3(100f, -100f, 100f);
-                    n.transform.parent = transform;
-                }
-
-                if (z == n_size - 1)
-                {
-                    GameObject n = Instantiate(cornerPiece, new Vector3(x, y, z) - new Vector3(n_size - 1f, n_size - 1f, n_size - 1f) / 2f + transform.position, Quaternion.identity);
-                    n.transform.Rotate(new Vector3(0f, 180f, 0f));
-                    n.transform.localScale = new Vector3(100f, -100f, 100f);
-                    n.transform.parent = transform;
-                }
-            }
-        }
+        // For top corners, adjust the scale (as in your original code)
+        if (y == n_size - 1)
+            corner.transform.localScale = new Vector3(100f, -100f, 100f);
     }
 }
