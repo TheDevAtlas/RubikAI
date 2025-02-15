@@ -733,7 +733,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   n_size: 5
   cornerPiece: {fileID: 1283951684456619242, guid: 3ea4e26655a05ca4eaa454b401dbdb25, type: 3}
-  faceMats: []
+  facePiece: {fileID: 8793132064665642956, guid: 5acf533736c24754cb7edb2a996cfbfc, type: 3}
   edgePiece: {fileID: 3578523102022489602, guid: 619df4b9472bf0348a2c903ed2515619, type: 3}
 --- !u!1 &1192696415
 GameObject:
