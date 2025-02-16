@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
+using System.Collections.Generic;
 
 public class RubikGenerator : MonoBehaviour
 {
@@ -6,6 +8,8 @@ public class RubikGenerator : MonoBehaviour
     public GameObject cornerPiece;
     public GameObject facePiece;
     public GameObject edgePiece;
+
+    public Material[] capMaterials;
 
     private void Start()
     {
@@ -61,6 +65,8 @@ public class RubikGenerator : MonoBehaviour
         }
 
         transform.localScale = Vector3.one * (3f / n_size);
+
+        SetColors();
     }
 
     void CreateCorner(int x, int y, int z)
@@ -123,5 +129,51 @@ public class RubikGenerator : MonoBehaviour
         GameObject face = Instantiate(facePiece, pos, rotation, transform);
         if (y == n_size - 1)
             face.transform.localScale = new Vector3(100f, -100f, 100f);
+    }
+
+    void SetColors()
+    {
+        List<GameObject> cubeFaces = new List<GameObject>();
+        foreach(Transform t in transform)
+        {
+            foreach(Transform f in t)
+            {
+                // Top Face //
+                if(Vector3.Dot(f.transform.forward, Vector3.down) >= 0.9f)
+                {
+                    f.GetComponent<Renderer>().material = capMaterials[0];
+                }
+
+                // Bottom Face //
+                if (Vector3.Dot(f.transform.forward, Vector3.up) >= 0.9f)
+                {
+                    f.GetComponent<Renderer>().material = capMaterials[1];
+                }
+
+                // Forward Face //
+                if (Vector3.Dot(f.transform.forward, Vector3.right) >= 0.9f)
+                {
+                    f.GetComponent<Renderer>().material = capMaterials[2];
+                }
+
+                // Right Face //
+                if (Vector3.Dot(f.transform.forward, Vector3.forward) >= 0.9f)
+                {
+                    f.GetComponent<Renderer>().material = capMaterials[3];
+                }
+
+                // Backward Face //
+                if (Vector3.Dot(f.transform.forward, Vector3.left) >= 0.9f)
+                {
+                    f.GetComponent<Renderer>().material = capMaterials[4];
+                }
+
+                // Left Face //
+                if (Vector3.Dot(f.transform.forward, Vector3.back) >= 0.9f)
+                {
+                    f.GetComponent<Renderer>().material = capMaterials[5];
+                }
+            }
+        }
     }
 }
