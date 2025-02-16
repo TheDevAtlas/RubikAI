@@ -19,7 +19,7 @@ public class RubikController : MonoBehaviour
     private List<RotationMove> moves = new List<RotationMove>();
 
     // Data structure for one rotation move
-    private class RotationMove
+    public class RotationMove
     {
         public RotationAxis axis;
         public int sliceIndex;
@@ -49,7 +49,7 @@ public class RubikController : MonoBehaviour
             RotationMove move = new RotationMove();
             move.axis = (RotationAxis)Random.Range(0, 3);
             move.sliceIndex = Random.Range(0, n_size);
-            // Choose either 90° or -90° randomly.
+            // Choose either 90ï¿½ or -90ï¿½ randomly.
             move.angle = (Random.value > 0.5f) ? 90f : -90f;
             move.duration = 0f;
             moves.Add(move);
@@ -115,7 +115,7 @@ public class RubikController : MonoBehaviour
 
     // Prepares a rotation move by creating a pivot, gathering the slice's pieces,
     // and reparenting those pieces under the pivot.
-    void SetupRotationMove(RotationMove move)
+    public void SetupRotationMove(RotationMove move)
     {
         float tolerance = 0.1f;
         move.slicePieces = new List<Transform>();
@@ -174,5 +174,92 @@ public class RubikController : MonoBehaviour
 
         move.elapsed = 0f;
         move.currentAngle = 0f;
+    }
+
+    public void ApplyAction(int action)
+    {
+        // Only allow a new action if we're idle.
+        if (state != RotationState.Idle)
+        {
+            Debug.LogWarning("Cube is busy; action skipped.");
+            return;
+        }
+
+        RotationMove move = new RotationMove();
+        switch (action)
+        {
+            case 0:
+                move.axis = RotationAxis.X;
+                move.sliceIndex = 0;
+                move.angle = 90f;
+                break;
+            case 1:
+                move.axis = RotationAxis.X;
+                move.sliceIndex = 0;
+                move.angle = -90f;
+                break;
+            case 2:
+                move.axis = RotationAxis.X;
+                move.sliceIndex = n_size - 1;
+                move.angle = 90f;
+                break;
+            case 3:
+                move.axis = RotationAxis.X;
+                move.sliceIndex = n_size - 1;
+                move.angle = -90f;
+                break;
+            case 4:
+                move.axis = RotationAxis.Y;
+                move.sliceIndex = 0;
+                move.angle = 90f;
+                break;
+            case 5:
+                move.axis = RotationAxis.Y;
+                move.sliceIndex = 0;
+                move.angle = -90f;
+                break;
+            case 6:
+                move.axis = RotationAxis.Y;
+                move.sliceIndex = n_size - 1;
+                move.angle = 90f;
+                break;
+            case 7:
+                move.axis = RotationAxis.Y;
+                move.sliceIndex = n_size - 1;
+                move.angle = -90f;
+                break;
+            case 8:
+                move.axis = RotationAxis.Z;
+                move.sliceIndex = 0;
+                move.angle = 90f;
+                break;
+            case 9:
+                move.axis = RotationAxis.Z;
+                move.sliceIndex = 0;
+                move.angle = -90f;
+                break;
+            case 10:
+                move.axis = RotationAxis.Z;
+                move.sliceIndex = n_size - 1;
+                move.angle = 90f;
+                break;
+            case 11:
+                move.axis = RotationAxis.Z;
+                move.sliceIndex = n_size - 1;
+                move.angle = -90f;
+                break;
+            default:
+                Debug.LogError("Invalid action: " + action);
+                return;
+        }
+
+        move.duration = rotationDuration;
+
+        // Clear any queued moves and start this one.
+        moves.Clear();
+        moves.Add(move);
+        currentMoveIndex = 0;
+        state = RotationState.Waiting;
+        stateStartTime = Time.time;
     }
 }
