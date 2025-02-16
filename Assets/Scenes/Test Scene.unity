@@ -756,8 +756,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   n_size: 3
-  rotationDuration: 0.3
-  waitTime: 0.8
+  rotationDuration: 0.8
+  waitTime: 0
+  scrambleMovesCount: 50
 --- !u!1 &1192696415
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,70 +1,131 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class RubikController : MonoBehaviour
 {
-    // Should match the RubikGenerator's n_size
     public int n_size = 3;
-
-    // Duration for each 90° rotation (in seconds)
     public float rotationDuration = 0.3f;
-    // Wait time between rotations (in seconds)
     public float waitTime = 0.8f;
+    public int scrambleMovesCount = 20; // Number of random moves to scramble
 
-    // Define an enum for clarity
     public enum RotationAxis { X, Y, Z }
 
-    private void Start()
+    // Internal state for our non-coroutine state machine
+    private enum RotationState { Idle, Waiting, Rotating }
+    private RotationState state = RotationState.Idle;
+    private float stateStartTime = 0f;
+    private int currentMoveIndex = 0;
+    private RotationMove currentMove = null;
+    private List<RotationMove> moves = new List<RotationMove>();
+
+    // Data structure for one rotation move
+    private class RotationMove
     {
-        // Start the automated slice rotation demonstration
-        StartCoroutine(RotateAllSlices());
+        public RotationAxis axis;
+        public int sliceIndex;
+        public float angle;
+        public float duration;
+
+        // These runtime fields are initialized when the move starts
+        public GameObject pivot;
+        public List<Transform> slicePieces;
+        public Vector3 rotationAxis;
+        public float elapsed;
+        public float currentAngle;
     }
 
-    /// <summary>
-    /// Iterates over every slice (each axis and each index) and rotates it forward and back.
-    /// </summary>
-    IEnumerator RotateAllSlices()
+    void Start()
     {
-        yield return new WaitForSeconds(waitTime);
-        // Loop through each axis (X, Y, Z)
-        foreach (RotationAxis axis in System.Enum.GetValues(typeof(RotationAxis)))
+        // Instead of calling a coroutine, we scramble the cube immediately.
+        ScrambleCube();
+    }
+
+    // Generate a random scramble sequence.
+    void ScrambleCube()
+    {
+        moves.Clear();
+        for (int i = 0; i < scrambleMovesCount; i++)
         {
-            // For each slice in the chosen axis
-            for (int sliceIndex = 0; sliceIndex < n_size; sliceIndex++)
+            RotationMove move = new RotationMove();
+            move.axis = (RotationAxis)Random.Range(0, 3);
+            move.sliceIndex = Random.Range(0, n_size);
+            // Choose either 90° or -90° randomly.
+            move.angle = (Random.value > 0.5f) ? 90f : -90f;
+            move.duration = 0f;
+            moves.Add(move);
+        }
+        currentMoveIndex = 0;
+        state = RotationState.Waiting;
+        stateStartTime = Time.time;
+    }
+
+    void Update()
+    {
+        // Waiting between moves.
+        if (state == RotationState.Waiting)
+        {
+            if (Time.time - stateStartTime >= waitTime)
             {
-                // Rotate 90 degrees in one direction
-                yield return RotateSlice(axis, sliceIndex, 90f, rotationDuration);
-                yield return new WaitForSeconds(waitTime);
-                // Rotate back by -90 degrees
-                yield return RotateSlice(axis, sliceIndex, -90f, rotationDuration);
-                yield return new WaitForSeconds(waitTime);
+                if (currentMoveIndex < moves.Count)
+                {
+                    currentMove = moves[currentMoveIndex];
+                    SetupRotationMove(currentMove);
+                    state = RotationState.Rotating;
+                }
+                else
+                {
+                    state = RotationState.Idle;
+                }
+            }
+        }
+        // Animating a rotation move.
+        else if (state == RotationState.Rotating)
+        {
+            if (currentMove == null)
+                return; // safety check
+
+            currentMove.elapsed += Time.deltaTime;
+            float fraction = Mathf.Clamp01(currentMove.elapsed / currentMove.duration);
+            float targetAngle = Mathf.Lerp(0, currentMove.angle, fraction);
+            float deltaAngle = targetAngle - currentMove.currentAngle;
+
+            currentMove.pivot.transform.Rotate(currentMove.rotationAxis, deltaAngle, Space.Self);
+            currentMove.currentAngle += deltaAngle;
+
+            // When the rotation duration is complete, ensure the final angle is exact.
+            if (currentMove.elapsed >= currentMove.duration)
+            {
+                float finalDelta = currentMove.angle - currentMove.currentAngle;
+                currentMove.pivot.transform.Rotate(currentMove.rotationAxis, finalDelta, Space.Self);
+
+                // Detach all pieces from the pivot and clean up.
+                foreach (Transform piece in currentMove.slicePieces)
+                {
+                    piece.parent = transform;
+                }
+                Destroy(currentMove.pivot);
+
+                currentMove = null;
+                currentMoveIndex++;
+                state = (currentMoveIndex < moves.Count) ? RotationState.Waiting : RotationState.Idle;
+                stateStartTime = Time.time;
             }
         }
     }
 
-    /// <summary>
-    /// Rotates a slice of cubies (children of this GameObject) that belong to the given axis and slice index.
-    /// </summary>
-    /// <param name="axis">Axis about which to rotate (X, Y, or Z)</param>
-    /// <param name="sliceIndex">The index of the slice (0 to n_size - 1)</param>
-    /// <param name="angle">The angle (in degrees) to rotate (positive or negative)</param>
-    /// <param name="duration">How long the rotation should take</param>
-    public IEnumerator RotateSlice(RotationAxis axis, int sliceIndex, float angle, float duration)
+    // Prepares a rotation move by creating a pivot, gathering the slice's pieces,
+    // and reparenting those pieces under the pivot.
+    void SetupRotationMove(RotationMove move)
     {
-        // Tolerance for matching a cubie's coordinate to the slice's coordinate
         float tolerance = 0.1f;
-        List<Transform> slicePieces = new List<Transform>();
+        move.slicePieces = new List<Transform>();
+        float targetCoord = move.sliceIndex - ((n_size - 1) / 2.0f);
 
-        // Calculate the expected coordinate along the chosen axis.
-        // Note: The generator positions pieces at: localPosition = (x, y, z) - ((n_size-1)/2)
-        float targetCoord = sliceIndex - ((n_size - 1) / 2.0f);
-
-        // Loop through all direct children (each cubie)
+        // Find all pieces in the correct slice.
         foreach (Transform piece in transform)
         {
             float coord = 0f;
-            switch (axis)
+            switch (move.axis)
             {
                 case RotationAxis.X:
                     coord = piece.localPosition.x;
@@ -78,74 +139,40 @@ public class RubikController : MonoBehaviour
             }
             if (Mathf.Abs(coord - targetCoord) < tolerance)
             {
-                slicePieces.Add(piece);
+                move.slicePieces.Add(piece);
             }
         }
 
-        // If no pieces were found, exit early
-        if (slicePieces.Count == 0)
-            yield break;
+        // If no pieces are found, skip setting up this move.
+        if (move.slicePieces.Count == 0)
+            return;
 
-        // Create a temporary pivot object that will be used to rotate the slice.
-        GameObject pivot = new GameObject("Pivot");
-        pivot.transform.parent = this.transform;
-        // Set the pivot's local position so that it lies on the correct slice:
-        switch (axis)
+        // Create a new pivot object and set its local position.
+        move.pivot = new GameObject("Pivot");
+        move.pivot.transform.parent = transform;
+        switch (move.axis)
         {
             case RotationAxis.X:
-                pivot.transform.localPosition = new Vector3(targetCoord, 0, 0);
+                move.pivot.transform.localPosition = new Vector3(targetCoord, 0, 0);
+                move.rotationAxis = Vector3.right;
                 break;
             case RotationAxis.Y:
-                pivot.transform.localPosition = new Vector3(0, targetCoord, 0);
+                move.pivot.transform.localPosition = new Vector3(0, targetCoord, 0);
+                move.rotationAxis = Vector3.up;
                 break;
             case RotationAxis.Z:
-                pivot.transform.localPosition = new Vector3(0, 0, targetCoord);
+                move.pivot.transform.localPosition = new Vector3(0, 0, targetCoord);
+                move.rotationAxis = Vector3.forward;
                 break;
         }
 
-        // Parent each piece in the slice to the pivot
-        foreach (Transform piece in slicePieces)
+        // Reparent the pieces to the pivot.
+        foreach (Transform piece in move.slicePieces)
         {
-            piece.parent = pivot.transform;
+            piece.parent = move.pivot.transform;
         }
 
-        // Determine the axis vector (in the pivot's local space)
-        Vector3 rotationAxis = Vector3.zero;
-        switch (axis)
-        {
-            case RotationAxis.X:
-                rotationAxis = Vector3.right;
-                break;
-            case RotationAxis.Y:
-                rotationAxis = Vector3.up;
-                break;
-            case RotationAxis.Z:
-                rotationAxis = Vector3.forward;
-                break;
-        }
-
-        // Animate the rotation over the specified duration.
-        float elapsed = 0f;
-        float currentAngle = 0f;
-        while (elapsed < duration)
-        {
-            // Calculate the incremental rotation for this frame.
-            float deltaAngle = Mathf.Lerp(0, angle, elapsed / duration) - currentAngle;
-            pivot.transform.Rotate(rotationAxis, deltaAngle, Space.Self);
-            currentAngle += deltaAngle;
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        // Correct any small discrepancies
-        float finalDelta = angle - currentAngle;
-        pivot.transform.Rotate(rotationAxis, finalDelta, Space.Self);
-
-        // Unparent all pieces back to the Rubik's cube
-        foreach (Transform piece in slicePieces)
-        {
-            piece.parent = this.transform;
-        }
-        // Destroy the temporary pivot
-        Destroy(pivot);
+        move.elapsed = 0f;
+        move.currentAngle = 0f;
     }
 }
