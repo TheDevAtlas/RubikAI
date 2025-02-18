@@ -69,6 +69,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   n_size: 3
-  rotationDuration: 0
-  waitTime: 0
-  scrambleMovesCount: 5
+  rotationDuration: 0.01
+  waitTime: 0.01
+  scrambleMovesCount: 100

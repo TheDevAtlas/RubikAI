@@ -64,7 +64,7 @@ public class RubikGenerator : MonoBehaviour
             }
         }
 
-        transform.localScale = Vector3.one * (3f / n_size);
+        transform.localScale = Vector3.one * (3f / n_size) * 0.85f;
 
         SetColors();
     }
