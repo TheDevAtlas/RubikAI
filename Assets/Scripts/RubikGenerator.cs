@@ -67,6 +67,8 @@ public class RubikGenerator : MonoBehaviour
         transform.localScale = Vector3.one * (3f / n_size) * 0.85f;
 
         SetColors();
+
+        GetComponent<RubikController>().StartCube();
     }
 
     void CreateCorner(int x, int y, int z)
