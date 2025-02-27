@@ -4,7 +4,7 @@
 PlayerSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 28
-  productGUID: 9cab7ad3030d5484d943d8eadf7415af
+  productGUID: fb73907a3f207b04c9f6cca7f3b2cd36
   AndroidProfiler: 0
   AndroidFilterTouchesWhenObscured: 0
   AndroidEnableSustainedPerformanceMode: 0
@@ -930,10 +930,10 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: 6024c0ac-eaef-429b-b9ff-208324d70511
+  cloudProjectId: 1b57fff7-703f-4a62-9939-4567db39cf63
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Rubiks 2025-02-14_14-09-22
+  projectName: Rubiks 2025-02-26_19-33-28
   organizationId: blue-pixel-studios
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
