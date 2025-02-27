@@ -12,28 +12,21 @@ public class RubiksCubeController : MonoBehaviour
     public AnimationCurve rotationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     public int scrambleMoves = 20;
 
-    private List<Transform> pieces = new List<Transform>();
-    private Stack<(string, float)> moveHistory = new Stack<(string, float)>();
-    private string[] faces = { "Top", "Bottom", "Left", "Right", "Front", "Back" };
+    public List<Transform> pieces = new List<Transform>();
+    public Stack<(string, float)> moveHistory = new Stack<(string, float)>();
+    public string[] faces = { "Top", "Bottom", "Left", "Right", "Front", "Back" };
 
     private void Start()
     {
-        foreach (Transform piece in pieceHolder)
-        {
-            pieces.Add(piece);
-        }
+        //foreach (Transform piece in pieceHolder)
+        //{
+        //    pieces.Add(piece);
+        //}
 
-        StartCoroutine(ScrambleAndSolve());
+        //StartCoroutine(Scramble(scrambleMoves));
     }
 
-    private IEnumerator ScrambleAndSolve()
-    {
-        yield return Scramble(scrambleMoves);
-        yield return new WaitForSeconds(1f);
-        yield return Solve();
-    }
-
-    private IEnumerator Scramble(int moves)
+    public IEnumerator Scramble(int moves)
     {
         for (int i = 0; i < moves; i++)
         {
@@ -45,17 +38,7 @@ public class RubiksCubeController : MonoBehaviour
         }
     }
 
-    private IEnumerator Solve()
-    {
-        while (moveHistory.Count > 0)
-        {
-            var move = moveHistory.Pop();
-            yield return RotateFace(move.Item1, move.Item2, false);
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
-
-    private IEnumerator RotateFace(string face, float targetAngle, bool isAccelerated)
+    public IEnumerator RotateFace(string face, float targetAngle, bool isAccelerated)
     {
         float mod = isAccelerated ? 0.25f : 1f;
 
